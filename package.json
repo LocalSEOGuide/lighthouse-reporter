@@ -1,0 +1,18 @@
+{
+  "name": "lighthouse-reporter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parser": "2.3.2",
+    "dotenv": "8.2.0",
+    "lighthouse": "5.6.0",
+    "pg": "7.15.1"
+  }
+}
