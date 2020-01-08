@@ -1,7 +1,4 @@
 // Dependencies
-// DEBUG
-const log = require('why-is-node-running');
-
 const lighthouse = require('lighthouse');
 const chrome_launcher = require('chrome-launcher');
 const db = require('./database');
