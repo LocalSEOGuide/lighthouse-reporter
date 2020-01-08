@@ -1,4 +1,7 @@
 // Dependencies
+// DEBUG
+const log = require('why-is-node-running');
+
 const lighthouse = require('lighthouse');
 const chrome_launcher = require('chrome-launcher');
 const db = require('./database');
@@ -12,7 +15,7 @@ dotenv.config();
 
 // Lighthouse options
 const options = {
-  chromeFlags: ['--headless']
+  chromeFlags: ['--headless', '--no-sandbox']
 };
 
 // A config, don't know what it does
@@ -122,9 +125,11 @@ async function generateBulkReports (data) {
 
     // Generate a lighthouse report
     try {
+      console.log('Performing audit');
       const lhr = await performAudit(url, options);
 
       // Store the report in the database
+      console.log('Inserting report');
       await db.insertReport(lhr, template);
     }catch (err) {
       console.error(err);
@@ -144,6 +149,10 @@ function performAudit (url, opts, config = null) {
 
     return lighthouse(url, opts, config).then(results => {
       return chrome.kill().then(() => results.lhr).catch(err => console.error(err));
+    }).catch(up => {
+      console.log('Killing Chrome to prevent hanging.');
+      chrome.kill(); // <-- Kill chrome anyway
+      throw up; // <- ha ha
     });
   });
 }
