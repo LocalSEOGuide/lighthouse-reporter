@@ -69,6 +69,8 @@ async function processFile (path) {
         .catch((e) => {
           console.error(e);
         });
+    }).catch(e => {
+      console.error(e);
     });
   });
 }
