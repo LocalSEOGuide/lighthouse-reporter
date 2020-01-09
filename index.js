@@ -7,8 +7,16 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Read the config file
+// Environment variables
 dotenv.config();
+
+// Is this a recurring report?
+let should_repeat = false;
+
+if (process.argv.length > 2) {
+  console.log('$$$This report will re-run once a month for 90 days.');
+  should_repeat = true;
+}
 
 // Lighthouse options
 const options = {
@@ -58,7 +66,9 @@ async function processFile (path) {
         }
 
         // Store this URL in the database to be automagically run later
-        promises.push(db.insertURL(url, template));
+        if (should_repeat) {
+          promises.push(db.insertURL(url, template));
+        }
       }
 
       // Close database when all queries are finished

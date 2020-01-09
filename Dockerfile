@@ -18,5 +18,4 @@ COPY . .
 
 RUN npm install
 
-ENTRYPOINT ["dumb-init", "--"]
-CMD npm run start
+ENTRYPOINT ["dumb-init", "--", "npm", "run", "start"]
