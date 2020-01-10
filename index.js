@@ -48,50 +48,7 @@ db.connect(() => {
 // Read file from path, parse CSV data, and generate reports
 async function processFile (file_path) {
   file.readCsv(file_path, (data) => {
-    generateBulkReports(data).then((reports) => {
-      const csv_header = [
-        {id: 'url', title: 'URL'},
-        {id: 'template', title: 'Template'},
-        {id: 'performance', title: 'Performance'},
-        {id: 'accessibility', title: 'Accessibility'},
-        {id: 'bestPractices', title: 'Best Practices'},
-        {id: 'seo', title: 'SEO'},
-        {id: 'pwa', title: 'Progressive Web App'}
-      ];
-
-      const csv_records = [];
-
-      reports.forEach((report) => {
-        const performance_score = report.lhr.categories['performance'].score;
-        const accessibility_score = report.lhr.categories['accessibility'].score;
-        const best_practices_score = report.lhr.categories['best-practices'].score;
-        const seo_score = report.lhr.categories['seo'].score;
-        const pwa_score = report.lhr.categories['pwa'].score;
-
-        csv_records.push({
-          url: report.url,
-          template: report.template,
-          performance: performance_score,
-          accessibility: accessibility_score,
-          bestPractices: best_practices_score,
-          seo: seo_score,
-          pwa: pwa_score,
-        });
-      });
-
-      const out_path = path.join(__dirname, 'output', 'output.csv');
-      const csv_writer = createCsvWriter({
-        path: out_path,
-        header: csv_header
-      });
-
-      csv_writer.writeRecords(csv_records)
-        .then(() => {
-          console.log('Finished writing records to output file.');
-        }).catch(err => {
-          console.error(err);
-        });
-
+    generateBulkReports(data, true).then(() => {
       // Handle pushing URLs into the database, if necessary
       const promises = [];
 
@@ -119,13 +76,12 @@ async function processFile (file_path) {
       }
 
       // Close database when all queries are finished
-      Promise.all(promises)
-        .then(() => {
-          closeDatabase();
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      Promise.all(promises).then(() => {
+        closeDatabase();
+      }).catch((e) => {
+        console.error(e);
+      });
+
     }).catch(e => {
       console.error(e);
     });
@@ -151,7 +107,7 @@ async function doAutomaticReporting () {
   });
 
   // Do reports for all URLs that need updating
-  await generateBulkReports(urlsToUpdate);
+  await generateBulkReports(urlsToUpdate, false);
 
   // Now, remove all URLs that have expired
   await db.removeExpiredUrls();
@@ -161,7 +117,26 @@ async function doAutomaticReporting () {
 }
 
 // Generate reports from a bulk list of URLs
-async function generateBulkReports (data) {
+async function generateBulkReports (data, shouldMakeFile) {
+  // FILE STUFF
+  const csv_header = [
+    {id: 'url', title: 'URL'},
+    {id: 'template', title: 'Template'},
+    {id: 'performance', title: 'Performance'},
+    {id: 'accessibility', title: 'Accessibility'},
+    {id: 'bestPractices', title: 'Best Practices'},
+    {id: 'seo', title: 'SEO'},
+    {id: 'pwa', title: 'Progressive Web App'}
+  ];
+
+  let csv_records = [];
+
+  const out_path = path.join(__dirname, 'output', 'output.csv');
+  const csv_writer = createCsvWriter({
+    path: out_path,
+    header: csv_header
+  });
+
   // Capture the reports to return when finished
   const all_reports = [];
 
@@ -187,11 +162,36 @@ async function generateBulkReports (data) {
       console.log('Performing audit');
       const lhr = await performAudit(url, options);
 
-      all_reports.push({
-        url: url,
-        template: template,
-        lhr: lhr,
-      });
+      if (shouldMakeFile) {
+        report = {
+          url: url,
+          template: template,
+          lhr: lhr,
+        };
+
+        const performance_score = report.lhr.categories['performance'].score;
+        const accessibility_score = report.lhr.categories['accessibility'].score;
+        const best_practices_score = report.lhr.categories['best-practices'].score;
+        const seo_score = report.lhr.categories['seo'].score;
+        const pwa_score = report.lhr.categories['pwa'].score;
+
+        csv_records.push({
+          url: report.url,
+          template: report.template,
+          performance: performance_score,
+          accessibility: accessibility_score,
+          bestPractices: best_practices_score,
+          seo: seo_score,
+          pwa: pwa_score,
+        });
+
+        try {
+          const write_result = csv_writer.writeRecords(csv_records);
+        }catch (err) {
+          console.error(err);
+        }
+        csv_records = [];
+      }
 
       // Store the report in the database
       console.log('Inserting report');
