@@ -48,7 +48,3 @@ This table contains information about the savings opportunities found during an 
 3. fetch_time TIMESTAMP - The fetch_time of the report where this request originated
 4. audit_text VARCHAR(2048) - The name of the audit in question
 5. estimated_savings DECIMAL - The estimated time saved in milliseconds
-
-
-CREATE VIEW unagi_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%unagiscooters.com%';
-CREATE VIEW unagi_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%unagiscooters.com%';
