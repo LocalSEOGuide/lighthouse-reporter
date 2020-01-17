@@ -1,16 +1,18 @@
 # Lighthouse Reporter
 
-This tool generates lighthouse reports, parses the data, and stores it in a Cloud SQL database. The data is then fed GDS to create reports.
+This tool generates lighthouse reports, parses the data, and stores it in a Cloud SQL database. The data is then pulled into GDS to create reports.
 
 ## Database Structure
 
-These are the tables used by the tool
+These are the tables used by the tool. In general, rows will be queried by the URL of the audit, and the time the report was fetched (fetch_time).
 
 ### raw_reports
 
 COMING SOON - This will contain the raw JSON of the reports
 
 ### gds_audits
+
+This table contains the basic performance metrics.
 
 0. id SERIAL PRIMARY KEY - For unique identification
 1. url VARCHAR(2048) - The URL of the report
@@ -25,6 +27,8 @@ COMING SOON - This will contain the raw JSON of the reports
 
 ### resource_chart
 
+This table contains information about resource requests performed during an audit.
+
 0. id SERIAL PRIMARY KEY - For unique identification
 1. audit_url VARCHAR(2048) - The URL of the page where this request originated
 2. template VARCHAR(2048) - The template to which this page belongs
@@ -36,9 +40,15 @@ COMING SOON - This will contain the raw JSON of the reports
 
 ### savings_opportunities
 
+This table contains information about the savings opportunities found during an audit.
+
 0. id SERIAL PRIMARY KEY - For unique identification
 1. audit_url VARCHAR(2048) - The URL of the page where this request originated
 2. template VARCHAR(2048) - The template to which this page belongs
 3. fetch_time TIMESTAMP - The fetch_time of the report where this request originated
 4. audit_text VARCHAR(2048) - The name of the audit in question
 5. estimated_savings DECIMAL - The estimated time saved in milliseconds
+
+
+CREATE VIEW unagi_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%unagiscooters.com%';
+CREATE VIEW unagi_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%unagiscooters.com%';
