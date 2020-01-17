@@ -29,7 +29,7 @@ This table contains the basic performance metrics.
 
 This table contains information about resource requests performed during an audit.
 
-0. id SERIAL - PRIMARY KEY - For unique identification
+0. id - SERIAL PRIMARY KEY - For unique identification
 1. audit_url - VARCHAR(2048) - The URL of the page where this request originated
 2. template - VARCHAR(2048) - The template to which this page belongs
 3. fetch_time - TIMESTAMP - The fetch_time of the report where this request originated
