@@ -25,6 +25,8 @@ That will make jarvis run the report automatically every 15 days for the next 10
 
 ## Creating A New Report
 
+To create a new report, we have to duplicate the template report and create new data sources. That process is as follows.
+
 ### Creating the database views
 
 First, log in to the Cloud SQL database for the lighthouse-reporting project in Google Cloud. Run the following queries to create four new views for the new property (using AutoNation as an example):
