@@ -34,7 +34,11 @@ First, log in to the Cloud SQL database for the lighthouse-reporting project in 
 
 Now, go into GDS and create four new data sources. Select 'PostgreSQL' as the source type and input the credentials for the Cloud SQL database. Choose one of the four views you created in the previous step, so that there is a data source for each of the four views.
 
-Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report. It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using AutoNation as an example, that should look like this:
+Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report.
+
+![Copy report button](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_copy_report.jpg "Copy Report")
+
+It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using AutoNation as an example, that should look like this:
 
 [INSERT IMAGE HERE]
 
