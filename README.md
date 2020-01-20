@@ -40,7 +40,7 @@ Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1
 
 It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using AutoNation as an example, that should look like this:
 
-[INSERT IMAGE HERE]
+![Set sources](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_set_sources.jpg "Set sources")
 
 The new report should populate with data from the views you previously created. Now send Jarvis some URLs and he should take care of the rest.
 
