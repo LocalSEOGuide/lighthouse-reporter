@@ -25,6 +25,8 @@ That will make jarvis run the report automatically every 15 days for the next 10
 
 ## Creating A New Report
 
+### Creating the database views
+
 First, log in to the Cloud SQL database for the lighthouse-reporting project in Google Cloud. Run the following queries to create four new views for the new property (using AutoNation as an example):
 
     CREATE VIEW autonation_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%autonation.com%';
@@ -32,7 +34,11 @@ First, log in to the Cloud SQL database for the lighthouse-reporting project in 
     CREATE VIEW autonation_diagnostics AS SELECT * FROM diagnostics WHERE audit_url LIKE '%autonation.com%';
     CREATE VIEW autonation_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%autonation.com%';
 
+### Creating the data sources
+
 Now, go into GDS and create four new data sources. Select 'PostgreSQL' as the source type and input the credentials for the Cloud SQL database. Choose one of the four views you created in the previous step, so that there is a data source for each of the four views.
+
+### Creating the new GDS report
 
 Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report.
 
