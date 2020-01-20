@@ -23,6 +23,23 @@ By default, the automatic reports occur every 30 days for 90 days. If you'd like
 
 That will make jarvis run the report automatically every 15 days for the next 100 days. You can use whatever numbers you like or leave it on the default.
 
+## Creating A New Report
+
+First, log in to the Cloud SQL database for the lighthouse-reporting project in Google Cloud. Run the following queries to create four new views for the new property (using AutoNation as an example):
+
+    CREATE VIEW autonation_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%autonation.com%';
+    CREATE VIEW autonation_savings_opportunities AS SELECT * FROM savings_opportunities WHERE audit_url LIKE '%autonation.com%';
+    CREATE VIEW autonation_diagnostics AS SELECT * FROM diagnostics WHERE audit_url LIKE '%autonation.com%';
+    CREATE VIEW autonation_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%autonation.com%';
+
+Now, go into GDS and create four new data sources. Select 'PostgreSQL' as the source type and input the credentials for the Cloud SQL database. Choose one of the four views you created in the previous step, so that there is a data source for each of the four views.
+
+Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report. It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using AutoNation as an example, that should look like this:
+
+[INSERT IMAGE HERE]
+
+The new report should populate with data from the views you previously created. Now send Jarvis some URLs and he should take care of the rest.
+
 ## Database Structure
 
 These are the tables used by the tool. In general, rows will be queried by the URL of the audit, and the time the report was fetched (fetch_time).
