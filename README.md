@@ -21,7 +21,7 @@ By default, the automatic reports occur every 30 days for 90 days. If you'd like
 
     @jarvis lighthouse-reporter auto 15 100
 
-That will make jarvis run the report automatically every 15 days for the next 100 days.
+That will make jarvis run the report automatically every 15 days for the next 100 days. You can use whatever numbers you like or leave it on the default.
 
 ## Database Structure
 
