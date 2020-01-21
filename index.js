@@ -220,7 +220,7 @@ async function parseReportAndStore (url, template, report) {
         report['audits']['dom-size']['details']['items'].forEach(item => {
           current_list_of_items.push({
             label: item['statistic'],
-            value: item['value']
+            value: parseFloat(item['value'].replace(',', ''))
           });
         });
   }
