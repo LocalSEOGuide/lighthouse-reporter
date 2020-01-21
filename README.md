@@ -50,12 +50,12 @@ The numbers can be replaced with whatever values you'd like. This example will a
 
 ### Creating the database views
 
-First, log in to the Cloud SQL database for the lighthouse-reporting project in Google Cloud. Run the following queries to create four new views for the new property (using AutoNation as an example):
+First, log in to the Cloud SQL database (or whatever PostgresSQL database you're using). Run the following queries to create four new views for the new property (using Target as an example):
 
-    CREATE VIEW autonation_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%autonation.com%';
-    CREATE VIEW autonation_savings_opportunities AS SELECT * FROM savings_opportunities WHERE audit_url LIKE '%autonation.com%';
-    CREATE VIEW autonation_diagnostics AS SELECT * FROM diagnostics WHERE audit_url LIKE '%autonation.com%';
-    CREATE VIEW autonation_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%autonation.com%';
+    CREATE VIEW target_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%target.com%';
+    CREATE VIEW target_savings_opportunities AS SELECT * FROM savings_opportunities WHERE audit_url LIKE '%target.com%';
+    CREATE VIEW target_diagnostics AS SELECT * FROM diagnostics WHERE audit_url LIKE '%target.com%';
+    CREATE VIEW target_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%target.com%';
 
 ### Creating the data sources
 
@@ -67,11 +67,11 @@ Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1
 
 ![Copy report button](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_copy_report.jpg "Copy Report")
 
-It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using AutoNation as an example, that should look like this:
+It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using Target as an example, that should look like this:
 
 ![Set sources](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_set_sources.jpg "Set sources")
 
-The new report should populate with data from the views you previously created. Now send Jarvis some URLs and he should take care of the rest.
+The new report should populate with data from the views you previously created.
 
 ## Database Structure
 
