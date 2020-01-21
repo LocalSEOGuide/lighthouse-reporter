@@ -3,25 +3,48 @@
 
 This tool generates lighthouse reports, parses the data, and stores it in a Cloud SQL database. The data is then pulled into GDS to create reports.
 
-## Slack Usage
+## Preparation
 
-Simply @ Jarvis and tell him to run the lighthouse-reporter script. Attach a CSV of URLs with two columns: URL and Template (case-sensitive.)
+Clone the repository. Install the dependencies as usual:
 
-Here are some examples:
+    npm install
 
-This will cause Jarvis to run a report on the attached CSV and store the result in the database.
+Create a folder called 'input' in the root directory of the project. This folder will contain the CSV of URLs to generate reports.
 
-    @jarvis lighthouse-reporter
+Also, create a file called '.env' in the root directory of the project. This needs to contain four environment variables for your database connection, like so (don't include the square brackets):
 
- If you add the word `auto`, Jarvis will run the report and automatically repeat the report every 30 days for the next 90 days:
+    DB_HOST=[address of your CloudSQL database]
+    DB_USER=[postgres username]
+    DB_PASS=[password for database user]
+    DB_NAME=[name of the database]
+    
+NOTE: The Dockerfile is not needed if you aren't going to Dockerize this application.
 
-    @jarvis lighthouse-reporter auto
+## Usage
 
-By default, the automatic reports occur every 30 days for 90 days. If you'd like to specify the frequency and lifetime of an automatic report, you may do so like this.
+Place a CSV of URLs in the 'input' folder. The CSV should have two columns: URL and Template. Here's an example:
 
-    @jarvis lighthouse-reporter auto 15 100
+| URL                             | Template         |
+|---------------------------------|------------------|
+| https://example.com             | Home Page        |
+| https://example.com/about-us    | Information Page |
+| https://example.com/product/123 | Product Page     |
 
-That will make jarvis run the report automatically every 15 days for the next 100 days. You can use whatever numbers you like or leave it on the default.
+Run the tool by calling the start script:
+
+    npm start
+
+The tool will generate lighthouse reports and store them in the database.
+
+### Automatic Reporting
+
+The tool can run reports automatically for a specified duration of time. To do that, simply setup a crontab that executes the tool every day with an empty 'input' folder. This will run the tool in maintainence mode, and it will automatically report on URLs stored in the database.
+
+To setup an automated report, place a CSV of URLs in the input folder just like usual. Add the following parameters to the command:
+
+    npm start auto 30 90
+    
+The numbers can be replaced with whatever values you'd like. This example will automatically generate reports for the specified CSV of URLs every 30 days for the next 90 days.
 
 ## Creating A New Report
 
