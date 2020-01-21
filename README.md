@@ -50,7 +50,7 @@ The numbers can be replaced with whatever values you'd like. This example will a
 
 ### Creating the database views
 
-First, log in to the Cloud SQL database (or whatever PostgresSQL database you're using). Run the following queries to create four new views for the new property (using Target as an example):
+First, log in to the Cloud SQL database (or whatever PostgresSQL database you're using). Run the following queries to create four new views for the new property (replace 'target' with the your own client's name):
 
     CREATE VIEW target_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%target.com%';
     CREATE VIEW target_savings_opportunities AS SELECT * FROM savings_opportunities WHERE audit_url LIKE '%target.com%';
