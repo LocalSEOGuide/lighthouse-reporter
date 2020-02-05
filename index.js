@@ -382,6 +382,13 @@ async function processFile (file_path) {
     const file = fs.readFileSync(file_path);
     const csv_data = await neat_csv(file);
 
+    // Validate that input CSV has URL and Template columns
+    if (!csv_data.hasOwnProperty('URL') ||
+        !csv_data.hasOwnProperty('Template')) {
+      console.log('$$$Sorry, please make sure your CSV contains two columns labeled \'URL\' and \'Template\'.');
+      db.disconnect();
+    }
+
     // Do reporting on the file
     await doReporting(csv_data);
 
@@ -442,6 +449,7 @@ async function doAutomaticReporting () {
 db.connect(() => {
   // Check for file input
   const input_files = fs.readdirSync(path.join(__dirname, 'input'));
+
   if (input_files.length > 0) {
     console.log('We got a file! Process it...');
     processFile(path.join(__dirname, 'input', input_files[0]));
