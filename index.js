@@ -383,10 +383,12 @@ async function processFile (file_path) {
     const csv_data = await neat_csv(file);
 
     // Validate that input CSV has URL and Template columns
-    if (!csv_data.hasOwnProperty('URL') ||
-        !csv_data.hasOwnProperty('Template')) {
+    if (!csv_data[0].hasOwnProperty('URL') ||
+        !csv_data[0].hasOwnProperty('Template')) {
       console.log('$$$Sorry, please make sure your CSV contains two columns labeled \'URL\' and \'Template\'.');
       db.disconnect();
+    }else{
+      console.log('All good!');
     }
 
     // Do reporting on the file
