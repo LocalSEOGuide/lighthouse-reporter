@@ -387,6 +387,7 @@ async function processFile (file_path) {
         !csv_data[0].hasOwnProperty('Template')) {
       console.log('$$$Sorry, please make sure your CSV contains two columns labeled \'URL\' and \'Template\'.');
       db.disconnect();
+      process.exit(-1);
     }else{
       console.log('All good!');
     }
