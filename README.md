@@ -61,6 +61,14 @@ First, log in to the Cloud SQL database (or whatever PostgresSQL database you're
 
 Now, go into GDS and create four new data sources. Select 'PostgreSQL' as the source type and input the credentials for the Cloud SQL database. Choose one of the four views you created in the previous step, so that there is a data source for each of the four views.
 
+### Whitelisting The Database
+
+If you're using a database behind a firewall (such as Cloud SQL) you'll need to whitelist the Google Data Studio servers to allow connections.
+
+The directions for whitelisting IP addresses in Cloud SQL can be found here: https://cloud.google.com/sql/docs/mysql/configure-ip
+
+The list of IP addresses required by datastudio is listed under 'Notes' on this page: https://support.google.com/datastudio/answer/7288010?hl=en&ref_topic=7332343
+
 ### Creating the new GDS report
 
 Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report.
