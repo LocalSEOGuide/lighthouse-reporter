@@ -1,3 +1,7 @@
+// Load environment variables
+const dotenv = require('dotenv');
+dotenv.config();
+
 // dependencies
 const lighthouse = require('lighthouse');
 const chrome_launcher = require('chrome-launcher');
@@ -5,10 +9,6 @@ const db = require('./database');
 const fs = require('fs');
 const path = require('path');
 const neat_csv = require('neat-csv');
-const dotenv = require('dotenv');
-
-// Load environment variables
-dotenv.config();
 
 // Is this a recurring report or no?
 let should_repeat = false;
@@ -41,7 +41,7 @@ if (should_repeat) {
 if (isNaN(auto_report_interval) || isNaN(auto_report_lifetime) ||
                 auto_report_interval < 1 || auto_report_lifetime < 1) {
   console.log('$$$Sorry, please check your input.');
-  return;
+  process.exit(1);
 }
 
 if (should_repeat) {
@@ -116,6 +116,10 @@ async function parseReportAndStore (url, template, report) {
   const time_to_interactive = report['audits']['interactive']['numericValue'];
   const first_meaningful_paint = report['audits']['first-meaningful-paint']['numericValue'];
   const first_cpu_idle = report['audits']['first-cpu-idle']['numericValue'];
+  const largest_contentful_paint = report['audits']['largest-contentful-paint']['numericValue'];
+  const cumulative_layout_shift = report['audits']['cumulative-layout-shift']['numericValue'];
+  const total_blocking_time = report['audits']['total-blocking-time']['numericValue'];
+  const speed_index = report['audits']['speed-index']['numericValue'];
 
   // These are lists and will have to be iterated
   const network_resources = report['audits']['network-requests']['details']['items'];
@@ -252,10 +256,14 @@ async function parseReportAndStore (url, template, report) {
                                               max_potential_fid,
                                               time_to_interactive,
                                               first_meaningful_paint,
-                                              first_cpu_idle
+                                              first_cpu_idle,
+                                              largest_contentful_paint,
+                                              cumulative_layout_shift,
+                                              total_blocking_time,
+                                              speed_index
                                             )
                                             VALUES (
-                                              $1, $2, $3, $4, $5, $6, $7, $8, $9
+                                              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
                                             )`;
 
   const resource_chart_query_text = `INSERT INTO resource_chart (
@@ -311,7 +319,11 @@ async function parseReportAndStore (url, template, report) {
     max_potential_fid,
     time_to_interactive,
     first_meaningful_paint,
-    first_cpu_idle
+    first_cpu_idle,
+    largest_contentful_paint,
+    cumulative_layout_shift,
+    total_blocking_time,
+    speed_index
   ];
 
   // Execute the queries
@@ -444,7 +456,6 @@ async function doAutomaticReporting () {
   console.log('Done automatically reporting!');
 
   db.disconnect();
-  return;
 }
 
 // Let's get started

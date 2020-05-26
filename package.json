@@ -12,8 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "~8.2.0",
-    "lighthouse": "~5.6.0",
+    "lighthouse": "6.0.0",
     "neat-csv": "~5.1.0",
-    "pg": "~7.17.1"
+    "pg": "^8.2.1"
   }
 }
