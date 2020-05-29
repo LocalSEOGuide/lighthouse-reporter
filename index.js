@@ -79,7 +79,7 @@ function performAudit (url, opts, config = null) {
 
 // Take a list of urls and templates and do the whole reporting thing
 // Generate report, then parse and store in the database
-async function doReporting (urls_and_templates) {
+async function doReporting (urls_and_templates, budgets) {
   // Loop through all of the urls and templates
   for (let i = 0; i < urls_and_templates.length; i++) {
     // Get the URL and Template
@@ -88,6 +88,10 @@ async function doReporting (urls_and_templates) {
 
     // Logging
     console.log(urls_and_templates[i]);
+
+    if (budgets) {
+      options.budgets = budgets;
+    }
 
     // Perform the audit (catch error if needed)
     try {
@@ -233,6 +237,45 @@ async function parseReportAndStore (url, template, report) {
     items: current_list_of_items,
   });
 
+  // V6.0 Grab the budget metrics
+  const performance_budget = [];
+  const timing_budget = [];
+
+  if (report['audits']['performance-budget'] && report['audits']['performance-budget']['details']) {
+    for (const item of report['audits']['performance-budget']['details']['items']) {
+      const item_label = item['label'];
+      const item_request_count = item['requestCount'] || 0;
+      const item_transfer_size = item['transferSize'] || 0;
+      let item_count_over_budget = 0;
+      if (item['countOverBudget'] != null) {
+        item_count_over_budget = item['countOverBudget'].replace(/\D/g, '')
+      }
+      const item_size_over_budget = item['sizeOverBudget'] || 0;
+
+      performance_budget.push({
+        item_label,
+        item_request_count,
+        item_transfer_size,
+        item_count_over_budget,
+        item_size_over_budget
+      });
+    }
+  }
+
+  if (report['audits']['timing-budget'] && report['audits']['timing-budget']['details']) {
+    for (const item of report['audits']['timing-budget']['details']['items']) {
+      const item_label = item['label'];
+      const item_measurement = item['measurement'] || 0;
+      const item_over_budget = item['overBudget'] || 0;
+
+      timing_budget.push({
+        item_label,
+        item_measurement,
+        item_over_budget,
+      });
+    }
+  }
+
   // Perform some conversions
   page_size = page_size / 1024; // <-- Convert KB to MB
 
@@ -302,6 +345,34 @@ async function parseReportAndStore (url, template, report) {
                                                           $1, $2, $3, $4, $5, $6
                                                         )`;
 
+  const performance_budget_query_text = `INSERT INTO budgets(
+                                                          audit_url,
+                                                          template,
+                                                          fetch_time,
+                                                          budget_type,
+                                                          item_label,
+                                                          item_request_count,
+                                                          item_transfer_size,
+                                                          item_count_over_budget,
+                                                          item_size_over_budget
+                                                        )
+                                                        VALUES (
+                                                          $1, $2, $3, $4, $5, $6, $7, $8, $9
+                                                        )`;
+
+  const timing_budget_query_text = `INSERT INTO budgets(
+                                                          audit_url,
+                                                          template,
+                                                          fetch_time,
+                                                          budget_type,
+                                                          item_label,
+                                                          item_time,
+                                                          item_time_over_budget
+                                                        )
+                                                        VALUES (
+                                                          $1, $2, $3, $4, $5, $6, $7
+                                                        )`;
+
   // Prepare the params for the queries
   let raw_reports_query_params = [
     url,
@@ -366,6 +437,42 @@ async function parseReportAndStore (url, template, report) {
     await db.query(savings_opportunities_query_text, savings_opportunities_query_params);
   }
 
+  // Insert each budget row (if any)
+  for (let i = 0; i < performance_budget.length; i++) {
+    const item = performance_budget[i];
+
+    const performance_budget_query_params = [
+      url,
+      template,
+      fetch_time,
+      'performance',
+      item.item_label,
+      item.item_request_count,
+      item.item_transfer_size,
+      item.item_count_over_budget,
+      item.item_size_over_budget
+    ];
+
+    await db.query(performance_budget_query_text, performance_budget_query_params);
+  }
+
+  // Insert each budget row (if any)
+  for (let i = 0; i < timing_budget.length; i++) {
+    const item = timing_budget[i];
+
+    const timing_budget_query_params = [
+      url,
+      template,
+      fetch_time,
+      'timing',
+      item.item_label,
+      item.item_measurement,
+      item.item_over_budget,
+    ];
+
+    await db.query(timing_budget_query_text, timing_budget_query_params);
+  }
+
   // Insert each diagnostic audit into the correct table
   for (let i = 0; i < diagnostics.length; i++) {
     const diag = diagnostics[i];
@@ -388,7 +495,7 @@ async function parseReportAndStore (url, template, report) {
 }
 
 // Process a file
-async function processFile (file_path) {
+async function processFile (file_path, budgets) {
   try {
     // Read the file
     const file = fs.readFileSync(file_path);
@@ -405,7 +512,7 @@ async function processFile (file_path) {
     }
 
     // Do reporting on the file
-    await doReporting(csv_data);
+    await doReporting(csv_data, budgets);
 
     // Recurring reports should be saved in the DB
     if (should_repeat) {
@@ -464,9 +571,21 @@ db.connect(() => {
   // Check for file input
   const input_files = fs.readdirSync(path.join(__dirname, 'input'));
 
+  // Check for budget file
+  let budget_file;
+
+  if (fs.existsSync(path.join(__dirname, 'input', 'budget.json'))) {
+    budget_file = JSON.parse(fs.readFileSync(path.join(__dirname, 'input', 'budget.json')));
+  }
+
   if (input_files.length > 0) {
-    console.log('We got a file! Process it...');
-    processFile(path.join(__dirname, 'input', input_files[0]));
+    for (const file of input_files) {
+      if (file.endsWith('.csv')) {
+        console.log('We got a file! Process it...');
+        processFile(path.join(__dirname, 'input', file), budget_file);
+        break;
+      }
+    }
   }else{
     doAutomaticReporting();
   }
