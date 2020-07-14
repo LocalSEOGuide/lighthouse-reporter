@@ -48,38 +48,29 @@ The numbers can be replaced with whatever values you'd like. This example will a
 
 ## Creating A New Report
 
-### Creating the database views
+Previously, we needed to create new views for each set of lighthouse reports we run. This is no longer the case. It is now possible to connect all your lighthouse reports to a single data source and use the filters in the report to define the data you'd like to use.
 
-First, log in to the Cloud SQL database (or whatever PostgresSQL database you're using). Run the following queries to create four new views for the new property (replace 'target' with the your own client's name):
+### Prepare your data source
 
-    CREATE VIEW target_gds_audits AS SELECT * FROM gds_audits WHERE url LIKE '%target.com%';
-    CREATE VIEW target_savings_opportunities AS SELECT * FROM savings_opportunities WHERE audit_url LIKE '%target.com%';
-    CREATE VIEW target_diagnostics AS SELECT * FROM diagnostics WHERE audit_url LIKE '%target.com%';
-    CREATE VIEW target_resource_chart AS SELECT * FROM resource_chart WHERE audit_url LIKE '%target.com%';
-
-### Creating the data sources
-
-Now, go into GDS and create four new data sources. Select 'PostgreSQL' as the source type and input the credentials for the Cloud SQL database. Choose one of the four views you created in the previous step, so that there is a data source for each of the four views.
-
-### Whitelisting The Database
-
-If you're using a database behind a firewall (such as Cloud SQL) you'll need to whitelist the Google Data Studio servers to allow connections.
-
-The directions for whitelisting IP addresses in Cloud SQL can be found here: https://cloud.google.com/sql/docs/mysql/configure-ip
-
-The list of IP addresses required by datastudio is listed under 'Notes' on this page: https://support.google.com/datastudio/answer/7288010?hl=en&ref_topic=7332343
+Connect your data source where you store your lighthouse data to data studio by creating a new data source.
 
 ### Creating the new GDS report
 
-Go to the template report here: https://datastudio.google.com/open/174e2h3Y8WVk1i7ufD4yxJ8aWfPG8ImOA. In the upper right corner select the button to create a copy of the report.
+Go to the template report here: https://datastudio.google.com/reporting/8b00983e-0baa-4806-9fbb-f04032d37b57. In the upper right corner select the button to create a copy of the report.
 
 ![Copy report button](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_copy_report.jpg "Copy Report")
 
-It will ask you to select data sources to replace the ones in the original report. Choose the views you created previously. Using Target as an example, that should look like this:
+It will ask you to select data sources to replace the ones in the original report. Choose the data sources you created previously. Using Target as an example, that should look like this:
 
 ![Set sources](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/docs_set_sources.jpg "Set sources")
 
-The new report should populate with data from the views you previously created.
+The new report should populate with data from the data sources you previously created.
+
+### Adjusting the filters
+
+Once the report is duplicated, select Resource -> Manage Filters. Edit the filters labels 'url_filter' and 'url_filter_2' to match the domain of the site you are auditing. For example, if you are auditing pages on target.com:
+
+![Edit filter](https://github.com/LocalSEOGuide/lighthouse-reporter/blob/master/docs/gds_filter.jpg "Edit filter")
 
 ## Database Structure
 
