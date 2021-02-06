@@ -13,7 +13,9 @@ async function connect (callback) {
 
   // Connect to the database and handle errors
   try {
+    console.log('Connecting...');
     await client.connect();
+    console.log('Connected!');
     callback();
   } catch (error) {
     console.error(error);

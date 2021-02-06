@@ -52,7 +52,7 @@ if (should_repeat) {
 
 // Lighthouse options
 const options = {
-  chromeFlags: ['--headless', '--no-sandbox']
+  chromeFlags: ['--no-sandbox', '--disable-dev-shm-usage', '--headless']
 };
 
 // A config, don't know what it does
@@ -228,7 +228,7 @@ async function parseReportAndStore (url, template, report) {
         report['audits']['dom-size']['details']['items'].forEach(item => {
           current_list_of_items.push({
             label: item['statistic'],
-            value: parseFloat(item['value'].replace(',', ''))
+            value: item['value']
           });
         });
   }
