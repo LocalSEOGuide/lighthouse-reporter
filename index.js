@@ -52,12 +52,17 @@ if (should_repeat) {
 
 // Lighthouse options
 const options = {
-  chromeFlags: ['--no-sandbox', '--disable-dev-shm-usage', '--headless']
+  chromeFlags: ['--headless', '--disable-dev-shm-usage', '--no-sandbox']
 };
 
 // A config, don't know what it does
 const config = {
-  extends: 'lighthouse:default'
+  extends: 'lighthouse:default',
+  settings: {
+    throttling: {
+      cpuSlowdownMultiplier: 2
+    }
+  }
 };
 
 // Perform the audit (returns the final report, if successful)
