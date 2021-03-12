@@ -425,7 +425,7 @@ async function parseReportAndStore (url, template, report) {
       resource['startTime'],
       resource['endTime']
     ];
-    await db.query(resource_chart_query_text, resource_chart_query_params);
+    db.query(resource_chart_query_text, resource_chart_query_params);
   }
 
   // Insert each savings opportunity into the correct table
@@ -439,7 +439,7 @@ async function parseReportAndStore (url, template, report) {
       opportunity['audit_text'],
       opportunity['estimated_savings']
     ];
-    await db.query(savings_opportunities_query_text, savings_opportunities_query_params);
+    db.query(savings_opportunities_query_text, savings_opportunities_query_params);
   }
 
   // Insert each budget row (if any)
@@ -458,7 +458,7 @@ async function parseReportAndStore (url, template, report) {
       item.item_size_over_budget
     ];
 
-    await db.query(performance_budget_query_text, performance_budget_query_params);
+    db.query(performance_budget_query_text, performance_budget_query_params);
   }
 
   // Insert each budget row (if any)
@@ -475,7 +475,7 @@ async function parseReportAndStore (url, template, report) {
       item.item_over_budget,
     ];
 
-    await db.query(timing_budget_query_text, timing_budget_query_params);
+    db.query(timing_budget_query_text, timing_budget_query_params);
   }
 
   // Insert each diagnostic audit into the correct table
@@ -494,7 +494,7 @@ async function parseReportAndStore (url, template, report) {
         item['value']
       ];
 
-      await db.query(diagnostics_query_text, diagnostics_query_params);
+      db.query(diagnostics_query_text, diagnostics_query_params);
     }
   }
 }
