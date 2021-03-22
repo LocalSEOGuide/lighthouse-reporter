@@ -88,8 +88,16 @@ async function doReporting (urls_and_templates, budgets) {
   // Loop through all of the urls and templates
   for (let i = 0; i < urls_and_templates.length; i++) {
     // Get the URL and Template
-    const url = urls_and_templates[i]['URL'];
-    const template = urls_and_templates[i]['Template'];
+    let url;
+    let template;
+
+    for (const prop in urls_and_templates[i]) {
+      if (prop.toLowerCase().includes('url')) {
+        url = urls_and_templates[i][prop];
+      } else if (prop.toLowerCase().includes('template')) {
+        template = urls_and_templates[i][prop];
+      }
+    }
 
     // Logging
     console.log(urls_and_templates[i]);
@@ -506,9 +514,19 @@ async function processFile (file_path, budgets) {
     const file = fs.readFileSync(file_path);
     const csv_data = await neat_csv(file);
 
+    let hasUrl = false;
+    let hasTemplate = false;
+
+    for (const prop in csv_data[0]) {
+      if (prop.toLowerCase().includes('url')) {
+        hasUrl = true;
+      } else if (prop.toLowerCase().includes('template')) {
+        hasTemplate = true;
+      }
+    }
+
     // Validate that input CSV has URL and Template columns
-    if (!csv_data[0].hasOwnProperty('URL') ||
-        !csv_data[0].hasOwnProperty('Template')) {
+    if (!hasUrl || !hasTemplate) {
       console.log('$$$Sorry, please make sure your CSV contains two columns labeled \'URL\' and \'Template\'.');
       db.disconnect();
       process.exit(-1);
