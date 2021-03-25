@@ -19,21 +19,12 @@ let auto_report_lifetime = 90; // Days
 // How frequently should this report be rerun
 let auto_report_interval = 30; // Days between reports
 
-// Get the args
-// If auto report
-if (process.argv.length > 2) {
-  should_repeat = process.argv[2] == 'auto';
-}
+let jobId = '';
 
-// If interval is supplied
-if (should_repeat) {
-  if (process.argv.length > 3) {
-    auto_report_interval = parseInt(process.argv[3]);
-  }
-
-  // If lifetime is supplied
-  if (process.argv.length > 4) {
-    auto_report_lifetime = parseInt(process.argv[4]);
+// Get the JOB ID provided by Jarvis (if applicable)
+for (const arg of process.argv) {
+  if (arg.startsWith('job-id')) {
+    jobId = arg.split('=')[1];
   }
 }
 
@@ -42,12 +33,6 @@ if (isNaN(auto_report_interval) || isNaN(auto_report_lifetime) ||
                 auto_report_interval < 1 || auto_report_lifetime < 1) {
   console.log('$$$Sorry, please check your input.');
   process.exit(1);
-}
-
-if (should_repeat) {
-  console.log('$$$This report will run every ' + auto_report_interval + ' days for ' + auto_report_lifetime + ' days.');
-}else{
-  console.log('$$$This report will only run once.');
 }
 
 // Lighthouse options
@@ -297,10 +282,11 @@ async function parseReportAndStore (url, template, report) {
                                               url,
                                               template,
                                               fetch_time,
-                                              report
+                                              report,
+                                              job_id
                                             )
                                             VALUES (
-                                              $1, $2, $3, $4
+                                              $1, $2, $3, $4, $5
                                             )`;
 
   const gds_audit_query_text = `INSERT INTO gds_audits (
@@ -316,10 +302,11 @@ async function parseReportAndStore (url, template, report) {
                                               largest_contentful_paint,
                                               cumulative_layout_shift,
                                               total_blocking_time,
-                                              speed_index
+                                              speed_index,
+                                              job_id
                                             )
                                             VALUES (
-                                              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+                                              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
                                             )`;
 
   const resource_chart_query_text = `INSERT INTO resource_chart (
@@ -329,10 +316,11 @@ async function parseReportAndStore (url, template, report) {
                                                   resource_url,
                                                   resource_type,
                                                   start_time,
-                                                  end_time
+                                                  end_time,
+                                                  job_id
                                                  )
                                                  VALUES (
-                                                   $1, $2, $3, $4, $5, $6, $7
+                                                   $1, $2, $3, $4, $5, $6, $7, $8
                                                  )`;
 
   const savings_opportunities_query_text = `INSERT INTO savings_opportunities(
@@ -340,10 +328,11 @@ async function parseReportAndStore (url, template, report) {
                                                           template,
                                                           fetch_time,
                                                           audit_text,
-                                                          estimated_savings
+                                                          estimated_savings,
+                                                          job_id
                                                         )
                                                         VALUES (
-                                                          $1, $2, $3, $4, $5
+                                                          $1, $2, $3, $4, $5, $6
                                                         )`;
 
   const diagnostics_query_text = `INSERT INTO diagnostics(
@@ -352,35 +341,8 @@ async function parseReportAndStore (url, template, report) {
                                                           fetch_time,
                                                           diagnostic_id,
                                                           item_label,
-                                                          item_value
-                                                        )
-                                                        VALUES (
-                                                          $1, $2, $3, $4, $5, $6
-                                                        )`;
-
-  const performance_budget_query_text = `INSERT INTO budgets(
-                                                          audit_url,
-                                                          template,
-                                                          fetch_time,
-                                                          budget_type,
-                                                          item_label,
-                                                          item_request_count,
-                                                          item_transfer_size,
-                                                          item_count_over_budget,
-                                                          item_size_over_budget
-                                                        )
-                                                        VALUES (
-                                                          $1, $2, $3, $4, $5, $6, $7, $8, $9
-                                                        )`;
-
-  const timing_budget_query_text = `INSERT INTO budgets(
-                                                          audit_url,
-                                                          template,
-                                                          fetch_time,
-                                                          budget_type,
-                                                          item_label,
-                                                          item_time,
-                                                          item_time_over_budget
+                                                          item_value,
+                                                          job_id
                                                         )
                                                         VALUES (
                                                           $1, $2, $3, $4, $5, $6, $7
@@ -391,7 +353,8 @@ async function parseReportAndStore (url, template, report) {
     url,
     template,
     fetch_time,
-    report
+    report,
+    jobId
   ];
 
   let gds_audit_query_params = [
@@ -407,8 +370,12 @@ async function parseReportAndStore (url, template, report) {
     largest_contentful_paint,
     cumulative_layout_shift,
     total_blocking_time,
-    speed_index
+    speed_index,
+    jobId
   ];
+
+  // Store async query promises here
+  const queryPromises = [];
 
   // Execute the queries
   await db.query(raw_reports_query_text, raw_reports_query_params);
@@ -431,9 +398,11 @@ async function parseReportAndStore (url, template, report) {
       resource['url'],
       resource_type,
       resource['startTime'],
-      resource['endTime']
+      resource['endTime'],
+      jobId
     ];
-    db.query(resource_chart_query_text, resource_chart_query_params);
+    let qPromise = db.query(resource_chart_query_text, resource_chart_query_params);
+    queryPromises.push(qPromise)
   }
 
   // Insert each savings opportunity into the correct table
@@ -445,45 +414,11 @@ async function parseReportAndStore (url, template, report) {
       template,
       fetch_time,
       opportunity['audit_text'],
-      opportunity['estimated_savings']
+      opportunity['estimated_savings'],
+      jobId
     ];
-    db.query(savings_opportunities_query_text, savings_opportunities_query_params);
-  }
-
-  // Insert each budget row (if any)
-  for (let i = 0; i < performance_budget.length; i++) {
-    const item = performance_budget[i];
-
-    const performance_budget_query_params = [
-      url,
-      template,
-      fetch_time,
-      'performance',
-      item.item_label,
-      item.item_request_count,
-      item.item_transfer_size,
-      item.item_count_over_budget,
-      item.item_size_over_budget
-    ];
-
-    db.query(performance_budget_query_text, performance_budget_query_params);
-  }
-
-  // Insert each budget row (if any)
-  for (let i = 0; i < timing_budget.length; i++) {
-    const item = timing_budget[i];
-
-    const timing_budget_query_params = [
-      url,
-      template,
-      fetch_time,
-      'timing',
-      item.item_label,
-      item.item_measurement,
-      item.item_over_budget,
-    ];
-
-    db.query(timing_budget_query_text, timing_budget_query_params);
+    let qPromise = db.query(savings_opportunities_query_text, savings_opportunities_query_params);
+    queryPromises.push(qPromise)
   }
 
   // Insert each diagnostic audit into the correct table
@@ -499,12 +434,18 @@ async function parseReportAndStore (url, template, report) {
         fetch_time,
         diag['diagnostic_id'],
         item['label'],
-        item['value']
+        item['value'],
+        jobId
       ];
 
-      db.query(diagnostics_query_text, diagnostics_query_params);
+      let qPromise = db.query(diagnostics_query_text, diagnostics_query_params);
+      queryPromises.push(qPromise)
     }
   }
+
+  // Disconnect when all promises have finished
+  await Promise.all(queryPromises);
+  console.log('Promises have returned');
 }
 
 // Process a file
